@@ -1,0 +1,25 @@
+sample:
+  name: Video screen mirror
+tests:
+  sample.video.scrmirror:
+    build_only: true
+    tags:
+      - samples
+      - shield
+      - net
+      - socket
+      - display
+      - video
+    depends_on:
+      - display
+      - video
+      - netif
+    platform_allow:
+      - mimxrt1170_evk/mimxrt1176/cm7
+      - mimxrt1064_evk
+    integration_platforms:
+      - mimxrt1170_evk/mimxrt1176/cm7
+      - mimxrt1064_evk
+    extra_args:
+      - platform:mimxrt1170_evk/mimxrt1176/cm7:SHIELD="rk055hdmipi4ma0"
+      - platform:mimxrt1064_evk:SHIELD="rk043fn66hs_ctg"
