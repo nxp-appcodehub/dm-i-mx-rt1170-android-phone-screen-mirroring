@@ -74,10 +74,13 @@ Then from a peer on the same network you can connect and send screen capture fra
 
 Example with gstreamer on a Linux (ximagesrc) / Windows PC (d3d11screencapturesrc):
 
-.. code-block:: console
+Application accepts mjpeg stream:
 
-    gst-launch-1.0 ximagesrc ! queue ! videoscale ! video/x-raw,width=1280,height=720 \
-        ! videoflip method=counterclockwise ! tcpclientsink host=192.0.2.1 port=5000 \
+.. code-block:: console
+    # Stream using the commands
+    gst-launch-1.0 -v ximagesrc ! queue ! videoscale ! video/x-raw,width=1280,height=720 \
+    ! videoflip method=counterclockwise ! videoconvert ! video/x-raw,format=I420 ! jpegenc \
+    ! tcpclientsink host=192.0.2.1 port=5000 \
 
 References
 **********

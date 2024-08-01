@@ -20,3 +20,28 @@ config NET_STACK_CODE_RAM_NAME
 	  Region to relocate networking code to
 
 endif # NET_STACK_CODE_RELOCATE
+
+config RECV_THREAD_PRIO
+	int "Receiving thread priority"
+	default 5
+	help
+	  Set the packet receiving thread preemptive priority
+
+config DECODE_THREAD_PRIO
+	int "Decode thread priority"
+	default 5
+	help
+	  Set the frame decoding thread preemptive priority
+
+config JPEG_SLAB_SIZE
+	int "Size of a jpeg frame buffer slab (in KB)"
+	default 512
+	help
+	  Size of a jpeg frame buffer slab in kilobytes
+
+config JPEG_SLAB_COUNT
+	int "Number of jpeg frame buffer slabs"
+	default 20
+	help
+	  Number of slabs to allocate for JPEG frame buffering
+

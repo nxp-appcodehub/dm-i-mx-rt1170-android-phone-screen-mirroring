@@ -2,9 +2,13 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(video_scrmirror)
+project(scrmirror)
 
-FILE(GLOB app_sources src/*.c)
+set(JPEGDEC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../JPEGDEC/src)
+
+zephyr_library_include_directories(${JPEGDEC_DIR})
+
+FILE(GLOB app_sources src/*.c ${JPEGDEC_DIR}/jpeg.c)
 target_sources(app PRIVATE ${app_sources})
 
 if (CONFIG_NET_STACK_CODE_RELOCATE)

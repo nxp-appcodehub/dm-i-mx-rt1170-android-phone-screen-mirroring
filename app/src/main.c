@@ -11,8 +11,8 @@
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/socket.h>
 
-#include <zephyr/drivers/display.h>
 #include "screen.h"
+#include "decode.h"
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>
@@ -25,75 +25,21 @@ static struct in_addr server_addr = {{{192, 0, 2, 1}}};
 static struct in_addr base_addr = {{{192, 0, 2, 2}}};
 static struct in_addr netmask = {{{255, 255, 255, 0}}};
 
-static inline int display_setup(const struct device *const display_dev)
-{
-	struct display_capabilities capabilities;
-	int ret = 0;
+enum app_state {
+	APP_WAIT_FOR_CLIENT,
+	APP_RUNNING,
+	APP_ERROR,
+};
 
-	if (!device_is_ready(display_dev)) {
-		LOG_ERR("Device %s not found", display_dev->name);
-		return -ENODEV;
-	}
-
-	printk("\nDisplay device: %s\n", display_dev->name);
-
-	display_get_capabilities(display_dev, &capabilities);
-
-	printk("- Capabilities:\n");
-	printk("  x_resolution = %u, y_resolution = %u, supported_pixel_formats = %u\n"
-	       "  current_pixel_format = %u, current_orientation = %u\n\n",
-	       capabilities.x_resolution, capabilities.y_resolution,
-	       capabilities.supported_pixel_formats, capabilities.current_pixel_format,
-	       capabilities.current_orientation);
-
-	/* Received buffer from gstreamer is in BGRx format */
-	ret = display_set_pixel_format(display_dev, SCR_FORMAT);
-	if (ret) {
-		LOG_ERR("Unable to set display format");
-		return ret;
-	}
-
-	return display_blanking_off(display_dev);
-}
-
-static inline void display_frame(const struct device *const display_dev,
-				 const unsigned char *const buf)
-{
-	struct display_buffer_descriptor buf_desc;
-
-	buf_desc.buf_size = SCR_BUF_SZ;
-	buf_desc.height = SCR_HEIGHT;
-	buf_desc.width = SCR_WIDTH;
-	buf_desc.pitch = buf_desc.width;
-
-	display_write(display_dev, 0, 0, &buf_desc, buf);
-}
-
-static ssize_t receive_all(int sock, void *buf, size_t len)
-{
-	while (len) {
-		ssize_t out_len = recv(sock, buf, len, 0);
-		/* Just for testing to see received packet size */
-		if (len == SCR_BUF_SZ) {
-			LOG_INF("out_len = %d, len = %d", out_len, len);
-		}
-		if (out_len < 0) {
-			return out_len;
-		}
-		buf = (char *)buf + out_len;
-		len -= out_len;
-	}
-
-	return 0;
-}
+K_EVENT_DEFINE(application_event);
 
 int main(void)
 {
-	unsigned char buffer[SCR_BUF_SZ];
 	struct sockaddr_in addr, client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
-	int i, ret, sock, client;
+	int ret, sock, video_sock;
 	struct net_if *iface;
+	enum app_state cur_state, next_state;
 
 	/* Set up DHCPv4 server */
 	iface = net_if_get_default();
@@ -140,32 +86,57 @@ int main(void)
 		return err;
 	}
 
-	/* Connection loop */
-	do {
-		printk("TCP: Waiting for client...\n");
+	cur_state = APP_WAIT_FOR_CLIENT;
+	next_state = APP_WAIT_FOR_CLIENT;
 
-		client = accept(sock, (struct sockaddr *)&client_addr, &client_addr_len);
-		if (client < 0) {
-			printk("Failed to accept: %d\n", errno);
-			return 0;
+	bool dhcpv4_server_running = false;
+
+	while (1) {
+		switch (net_if_oper_state(iface)) {
+		case NET_IF_OPER_UP:
+			if (!dhcpv4_server_running) {
+				net_dhcpv4_server_start(iface, &base_addr);
+				dhcpv4_server_running = true;
+			}
+			break;
+		default:
+			if (dhcpv4_server_running) {
+				net_dhcpv4_server_stop(iface);
+				dhcpv4_server_running = false;
+			}
+			break;
 		}
 
-		printk("TCP: Accepted connection\n");
-
-		/* Display loop */
-		i = 0;
-		do {
-			printk("\nReceiving frame %d\n", i++);
-
-			/* Receive video buffer from client */
-			ret = receive_all(client, buffer, SCR_BUF_SZ);
-			if (ret && ret != -EAGAIN) {
-				/* client disconnected */
-				printk("\nTCP: Client disconnected %d\n", ret);
-				close(client);
+		switch (cur_state) {
+		case APP_WAIT_FOR_CLIENT:
+			if (net_if_oper_state(iface) != NET_IF_OPER_UP) {
+				k_msleep(1000);
+				break;
 			}
 
-			display_frame(display_dev, buffer);
-		} while (!ret);
-	} while (1);
+			printk("TCP: Waiting for client...\n");
+			video_sock = zsock_accept(sock, (struct sockaddr *)&client_addr,
+						  &client_addr_len);
+			if (video_sock < 0) {
+				printk("Failed to accept: %d\n", errno);
+				next_state = APP_ERROR;
+			} else {
+				printk("TCP: Accepted connection\n");
+				client_addr.sin_port = htons(MY_PORT);
+				decode_start(&video_sock);
+				next_state = APP_RUNNING;
+			}
+			break;
+		case APP_RUNNING:
+			k_event_wait(&application_event, EVENT_SOCKET_THREAD_STOP, true, K_FOREVER);
+			decode_stop();
+			next_state = APP_WAIT_FOR_CLIENT;
+			break;
+		case APP_ERROR:
+			return -EIO;
+		}
+		cur_state = next_state;
+	}
+
+	return 0;
 }
