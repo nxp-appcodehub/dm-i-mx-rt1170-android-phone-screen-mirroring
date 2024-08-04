@@ -7,6 +7,8 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 
+#include <zephyr/net/dhcpv4_server.h>
+#include <zephyr/net/net_if.h>
 #include <zephyr/net/socket.h>
 
 #include <zephyr/drivers/display.h>
@@ -21,6 +23,10 @@ LOG_MODULE_REGISTER(main);
 #define SCR_WIDTH  DT_PROP(DT_CHOSEN(zephyr_display), width)
 #define SCR_HEIGHT DT_PROP(DT_CHOSEN(zephyr_display), height)
 #define SCR_BUF_SZ (SCR_WIDTH * SCR_HEIGHT * 4)
+
+static struct in_addr server_addr = {{{192, 0, 2, 1}}};
+static struct in_addr base_addr = {{{192, 0, 2, 2}}};
+static struct in_addr netmask = {{{255, 255, 255, 0}}};
 
 static inline int display_setup(const struct device *const display_dev)
 {
@@ -90,6 +96,14 @@ int main(void)
 	struct sockaddr_in addr, client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
 	int i, ret, sock, client;
+	struct net_if *iface;
+
+	/* Set up DHCPv4 server */
+	iface = net_if_get_default();
+	(void)net_if_ipv4_addr_add(iface, &server_addr, NET_ADDR_MANUAL, 0);
+	(void)net_if_ipv4_set_netmask_by_addr(iface, &server_addr, &netmask);
+
+	net_dhcpv4_server_start(iface, &base_addr);
 
 	/* Prepare Network */
 	(void)memset(&addr, 0, sizeof(addr));
