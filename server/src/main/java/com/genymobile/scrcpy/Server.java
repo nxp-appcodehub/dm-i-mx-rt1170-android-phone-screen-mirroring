@@ -23,9 +23,11 @@ import com.genymobile.scrcpy.util.LogUtils;
 import com.genymobile.scrcpy.util.Settings;
 import com.genymobile.scrcpy.util.SettingsException;
 import com.genymobile.scrcpy.video.CameraCapture;
+import com.genymobile.scrcpy.video.JpegCompressor;
 import com.genymobile.scrcpy.video.ScreenCapture;
 import com.genymobile.scrcpy.video.SurfaceCapture;
 import com.genymobile.scrcpy.video.SurfaceEncoder;
+import com.genymobile.scrcpy.video.VideoCodec;
 import com.genymobile.scrcpy.video.VideoSource;
 
 import android.os.BatteryManager;
@@ -199,9 +201,15 @@ public final class Server {
                     surfaceCapture = new CameraCapture(options.getCameraId(), options.getCameraFacing(), options.getCameraSize(),
                             options.getMaxSize(), options.getCameraAspectRatio(), options.getCameraFps(), options.getCameraHighSpeed());
                 }
-                SurfaceEncoder surfaceEncoder = new SurfaceEncoder(surfaceCapture, videoStreamer, options.getVideoBitRate(), options.getMaxFps(),
-                        options.getVideoCodecOptions(), options.getVideoEncoder(), options.getDownsizeOnError());
-                asyncProcessors.add(surfaceEncoder);
+
+                AsyncProcessor videoEncoder = null;
+                if (options.getVideoCodec() == VideoCodec.MJPEG) {
+                    videoEncoder = new JpegCompressor(surfaceCapture, connection, options.getMaxFps());
+                } else {
+                    videoEncoder = new SurfaceEncoder(surfaceCapture, videoStreamer, options.getVideoBitRate(), options.getMaxFps(),
+                            options.getVideoCodecOptions(), options.getVideoEncoder(), options.getDownsizeOnError());
+                }
+                asyncProcessors.add(videoEncoder);
             }
 
             Completion completion = new Completion(asyncProcessors.size());

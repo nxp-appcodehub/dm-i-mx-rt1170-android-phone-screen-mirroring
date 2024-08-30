@@ -1,3 +1,7 @@
+/**
+ * Modified by NXP in 2024-2025
+ */
+
 package com.genymobile.scrcpy.video;
 
 import com.genymobile.scrcpy.util.Codec;
@@ -6,6 +10,8 @@ import android.annotation.SuppressLint;
 import android.media.MediaFormat;
 
 public enum VideoCodec implements Codec {
+    // MediaCodec/MediaFormat do not support mjpeg (mimeType "image/jpeg" or "video/mjpeg")
+    MJPEG(0x68_32_36_33, "mjpeg", "image/jpeg"),
     H264(0x68_32_36_34, "h264", MediaFormat.MIMETYPE_VIDEO_AVC),
     H265(0x68_32_36_35, "h265", MediaFormat.MIMETYPE_VIDEO_HEVC),
     @SuppressLint("InlinedApi") // introduced in API 29
