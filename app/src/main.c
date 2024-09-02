@@ -12,6 +12,7 @@
 #include <zephyr/net/socket.h>
 
 #include <zephyr/drivers/display.h>
+#include "screen.h"
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>
@@ -19,10 +20,6 @@ LOG_MODULE_REGISTER(main);
 
 #define MY_PORT          5000
 #define MAX_CLIENT_QUEUE 1
-
-#define SCR_WIDTH  DT_PROP(DT_CHOSEN(zephyr_display), width)
-#define SCR_HEIGHT DT_PROP(DT_CHOSEN(zephyr_display), height)
-#define SCR_BUF_SZ (SCR_WIDTH * SCR_HEIGHT * 4)
 
 static struct in_addr server_addr = {{{192, 0, 2, 1}}};
 static struct in_addr base_addr = {{{192, 0, 2, 2}}};
@@ -50,7 +47,7 @@ static inline int display_setup(const struct device *const display_dev)
 	       capabilities.current_orientation);
 
 	/* Received buffer from gstreamer is in BGRx format */
-	ret = display_set_pixel_format(display_dev, PIXEL_FORMAT_ARGB_8888);
+	ret = display_set_pixel_format(display_dev, SCR_FORMAT);
 	if (ret) {
 		LOG_ERR("Unable to set display format");
 		return ret;
