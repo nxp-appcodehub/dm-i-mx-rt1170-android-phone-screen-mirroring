@@ -1,3 +1,6 @@
+/**
+ * Modified by NXP in 2024-2025
+ */
 package com.genymobile.scrcpy.control;
 
 import android.net.LocalSocket;
@@ -16,6 +19,11 @@ public final class ControlChannel {
     public ControlChannel(LocalSocket controlSocket) throws IOException {
         this.inputStream = controlSocket.getInputStream();
         this.outputStream = controlSocket.getOutputStream();
+    }
+
+    public ControlChannel(final InputStream inputStream, final OutputStream outputStream) {
+        this.inputStream = inputStream;
+        this.outputStream = outputStream;
     }
 
     public ControlMessage recv() throws IOException {

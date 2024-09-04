@@ -1,3 +1,7 @@
+/**
+ * Modified by NXP in 2024-2025
+ */
+
 package com.genymobile.scrcpy;
 
 import com.genymobile.scrcpy.audio.AudioCapture;
@@ -11,8 +15,8 @@ import com.genymobile.scrcpy.control.ControlChannel;
 import com.genymobile.scrcpy.control.Controller;
 import com.genymobile.scrcpy.control.DeviceMessage;
 import com.genymobile.scrcpy.device.ConfigurationException;
-import com.genymobile.scrcpy.device.DesktopConnection;
 import com.genymobile.scrcpy.device.Device;
+import com.genymobile.scrcpy.device.RemoteDirectConnection;
 import com.genymobile.scrcpy.device.Streamer;
 import com.genymobile.scrcpy.util.Ln;
 import com.genymobile.scrcpy.util.LogUtils;
@@ -148,7 +152,7 @@ public final class Server {
 
         List<AsyncProcessor> asyncProcessors = new ArrayList<>();
 
-        DesktopConnection connection = DesktopConnection.open(scid, tunnelForward, video, audio, control, sendDummyByte);
+        RemoteDirectConnection connection = RemoteDirectConnection.open(video, audio, control, sendDummyByte, options.getVideoCodec(), options.getSendCodecMeta(), options.getSendFrameMeta());
         try {
             if (options.getSendDeviceMeta()) {
                 connection.sendDeviceMeta(Device.getDeviceName());
