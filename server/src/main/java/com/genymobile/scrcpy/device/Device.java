@@ -1,3 +1,7 @@
+/**
+ * Modified by NXP in 2024-2025
+ */
+
 package com.genymobile.scrcpy.device;
 
 import com.genymobile.scrcpy.Options;
@@ -199,10 +203,10 @@ public final class Device {
 
         Size clientVideoSize = devicePosition.getScreenSize();
         if (!unlockedVideoSize.equals(clientVideoSize)) {
-            // The client sends a click relative to a video with wrong dimensions,
-            // the device may have been rotated since the event was generated, so ignore the event
-            return null;
+            // Video is scaled. Take the scaled size.
+            unlockedVideoSize = clientVideoSize;
         }
+
         Rect contentRect = screenInfo.getContentRect();
         Point point = devicePosition.getPoint();
         int convertedX = contentRect.left + point.getX() * contentRect.width() / unlockedVideoSize.getWidth();
