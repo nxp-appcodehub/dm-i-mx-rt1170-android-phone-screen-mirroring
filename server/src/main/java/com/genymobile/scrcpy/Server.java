@@ -204,7 +204,7 @@ public final class Server {
 
                 AsyncProcessor videoEncoder = null;
                 if (options.getVideoCodec() == VideoCodec.MJPEG) {
-                    videoEncoder = new JpegCompressor(surfaceCapture, connection, options.getMaxFps());
+                    videoEncoder = new JpegCompressor(surfaceCapture, connection, device, options.getMaxFps());
                 } else {
                     videoEncoder = new SurfaceEncoder(surfaceCapture, videoStreamer, options.getVideoBitRate(), options.getMaxFps(),
                             options.getVideoCodecOptions(), options.getVideoEncoder(), options.getDownsizeOnError());

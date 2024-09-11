@@ -197,9 +197,19 @@ public final class Device {
         // ignore the locked video orientation, the events will apply in coordinates considered in the physical device orientation
         Size unlockedVideoSize = screenInfo.getUnlockedVideoSize();
 
-        int reverseVideoRotation = screenInfo.getReverseVideoRotation();
-        // reverse the video rotation to apply the events
-        Position devicePosition = position.rotate(reverseVideoRotation);
+        int reverseDeviceRotation = screenInfo.getDeviceRotation();
+        switch (reverseDeviceRotation) {
+            case 1:
+                reverseDeviceRotation = 3;
+                break;
+            case 3:
+                reverseDeviceRotation = 1;
+                break;
+            default:
+                break;
+        }
+        // reverse the device rotation to apply the events
+        Position devicePosition = position.rotate(reverseDeviceRotation);
 
         Size clientVideoSize = devicePosition.getScreenSize();
         if (!unlockedVideoSize.equals(clientVideoSize)) {

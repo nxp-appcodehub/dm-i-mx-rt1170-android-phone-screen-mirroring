@@ -7,14 +7,17 @@
 package com.genymobile.scrcpy.video;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.SystemClock;
 import android.view.Surface;
 
 import com.genymobile.scrcpy.AsyncProcessor;
+import com.genymobile.scrcpy.device.Device;
 import com.genymobile.scrcpy.device.RemoteDirectConnection;
 import com.genymobile.scrcpy.util.IO;
 import com.genymobile.scrcpy.util.Ln;
@@ -25,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JpegCompressor implements AsyncProcessor {
+    private final Device device;
+
     // This should be set according to the remote receiver's decoding capacity
     private final int maxFps;
     private long lastFrameTime = 0;
@@ -41,16 +46,17 @@ public class JpegCompressor implements AsyncProcessor {
 
     private final AtomicBoolean stopped = new AtomicBoolean();
 
-    public JpegCompressor(SurfaceCapture capture, RemoteDirectConnection remoteDirectConnection, int maxFps) {
+    public JpegCompressor(SurfaceCapture capture, RemoteDirectConnection remoteDirectConnection, Device device, int maxFps) {
         this.capture = capture;
         this.remoteDirectConnection = remoteDirectConnection;
+        this.device = device;
         this.maxFps = maxFps;
 
         this.handlerThread = new HandlerThread("JpegCompressor");
         handlerThread.start();
     }
 
-    private void streamCapture() throws IOException {
+    private void setupImageReader() {
         int captureWidth = capture.getSize().getWidth();
         int captureHeight = capture.getSize().getHeight();
         imageReader = ImageReader.newInstance(captureWidth, captureHeight, PixelFormat.RGBA_8888, 2);
@@ -77,9 +83,12 @@ public class JpegCompressor implements AsyncProcessor {
                     Bitmap bitmap = Bitmap.createBitmap(captureWidth + rowPadding / pixelStride, captureHeight, Bitmap.Config.ARGB_8888);
                     bitmap.copyPixelsFromBuffer(buffer);
 
-                    Bitmap scaled_bitmap = Bitmap.createScaledBitmap(bitmap, DESIRED_WIDTH, DESIRED_HEIGHT, true);
+                    Matrix matrix = new Matrix();
+                    matrix.preRotate(90 * device.getScreenInfo().getDeviceRotation());
+                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                    bitmap = Bitmap.createScaledBitmap(bitmap, DESIRED_WIDTH, DESIRED_HEIGHT, true);
 
-                    scaled_bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
 
                     remoteDirectConnection.sendRawBytes(baos.toByteArray());
                     lastFrameTime = currentTime;
@@ -97,16 +106,17 @@ public class JpegCompressor implements AsyncProcessor {
                 }
             }
         }, new Handler(handlerThread.getLooper()));
+    }
 
+    private void streamCapture() throws IOException {
         capture.init();
-
         try {
             remoteDirectConnection.sendVideoHeader(capture.getSize());
-
             boolean alive = true;
             do {
                 Surface surface = null;
                 try {
+                    setupImageReader();
                     surface = imageReader.getSurface();
                     capture.start(surface);
 
@@ -115,15 +125,17 @@ public class JpegCompressor implements AsyncProcessor {
                             alive = false;
                             break;
                         }
-                        if (capture.consumeReset()) {
-                            // must restart encoding with new size
-                            break;
-                        }
+                        SystemClock.sleep(1);
                     }
+
                     if (capture.isClosed()) {
                         // The capture might have been closed internally (for example if the camera is disconnected)
                         alive = false;
                     }
+
+                    Ln.d("Capture has been reset, must restart encoding");
+                    surface.release();
+                    imageReader.close();
                 } finally {
                     if (surface != null) {
                         surface.release();
