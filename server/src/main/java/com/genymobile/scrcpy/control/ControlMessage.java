@@ -1,3 +1,6 @@
+/**
+ * Modified by NXP in 2024-2025
+ */
 package com.genymobile.scrcpy.control;
 
 import com.genymobile.scrcpy.device.Position;
@@ -22,6 +25,7 @@ public final class ControlMessage {
     public static final int TYPE_UHID_CREATE = 12;
     public static final int TYPE_UHID_INPUT = 13;
     public static final int TYPE_OPEN_HARD_KEYBOARD_SETTINGS = 14;
+    public static final int TYPE_DUMMY = 15;
 
     public static final long SEQUENCE_INVALID = 0;
 

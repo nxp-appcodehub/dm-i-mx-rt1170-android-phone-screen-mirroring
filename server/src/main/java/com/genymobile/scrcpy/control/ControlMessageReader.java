@@ -1,3 +1,7 @@
+/**
+ * Modified by NXP in 2024-2025
+ */
+
 package com.genymobile.scrcpy.control;
 
 import com.genymobile.scrcpy.util.Binary;
@@ -99,6 +103,9 @@ public class ControlMessageReader {
             case ControlMessage.TYPE_UHID_INPUT:
                 msg = parseUhidInput();
                 break;
+            case ControlMessage.TYPE_DUMMY:
+                Ln.d("Check if connection is still alive, do nothing");
+                return null;
             default:
                 Ln.w("Unknown event type: " + type);
                 msg = null;
