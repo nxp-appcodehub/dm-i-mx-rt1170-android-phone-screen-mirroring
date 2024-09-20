@@ -1,8 +1,6 @@
 #ifndef SC_BINARY_H
 #define SC_BINARY_H
 
-#include "common.h"
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
