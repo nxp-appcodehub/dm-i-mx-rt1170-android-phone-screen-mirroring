@@ -5,6 +5,7 @@ build/
 /release-*/
 .idea/
 .gradle/
-/x/
+/x/*
+!/x/server
 local.properties
 /scrcpy-server
