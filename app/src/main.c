@@ -10,6 +10,8 @@
 #include <zephyr/net/dhcpv4_server.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/socket.h>
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/net/net_config.h>
 
 #include "screen.h"
 #include "decode.h"
@@ -41,8 +43,27 @@ int main(void)
 	struct net_if *iface;
 	enum app_state cur_state, next_state;
 
-	/* Set up DHCPv4 server */
 	iface = net_if_get_default();
+
+#if defined(CONFIG_USB_DEVICE_NETWORK_ECM)
+	ret = usb_enable(NULL);
+	if (ret != 0) {
+		LOG_ERR("Cannot enable USB (%d)", ret);
+		return ret;
+	}
+
+	/* Looking for the netusb to configure to override the default iface */
+	STRUCT_SECTION_FOREACH(net_if, i_iface) {
+		if (strncmp(net_if_get_device(i_iface)->name, "eth_netusb", 10) == 0) {
+			iface = i_iface;
+			break;
+		}
+	}
+#endif
+
+	LOG_INF("Protocol %s is selected", iface->if_dev->dev->name);
+
+	(void)net_config_init_app(net_if_get_device(iface), "Initializing network");
 	(void)net_if_ipv4_addr_add(iface, &server_addr, NET_ADDR_MANUAL, 0);
 	(void)net_if_ipv4_set_netmask_by_addr(iface, &server_addr, &netmask);
 
