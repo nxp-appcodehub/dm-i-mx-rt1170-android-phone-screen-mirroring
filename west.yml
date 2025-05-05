@@ -3,20 +3,30 @@
 
 manifest:
   self:
-    west-commands: scripts/west-commands.yml
+    path: scrmirror
+  defaults:
+    remote: zephyrproject-rtos
 
   remotes:
     - name: zephyrproject-rtos
       url-base: https://github.com/zephyrproject-rtos
+    - name: nxp-appcodehub
+      url-base: https://github.com/nxp-appcodehub
+    - name: nxp-upstream
+      url-base: https://github.com/nxp-upstream
 
   projects:
     - name: zephyr
-      remote: zephyrproject-rtos
-      revision: main
+      remote: nxp-upstream
+      revision: screen_mirror_support
+      west-commands: scripts/west-commands.yml
       import:
-        # By using name-allowlist we can clone only the modules that are
-        # strictly needed by the application.
         name-allowlist:
           - cmsis      # required by the ARM port
-          - hal_nordic # required by the custom_plank board (Nordic based)
-          - hal_stm32  # required by the nucleo_f302r8 board (STM32 based)
+          - cmsis_6
+          - hostap
+    - name: hal_nxp
+      revision: e4ab95e7409f2c4e5c7a4f482aa66360433d9f60
+      path: modules/hal/nxp
+      groups:
+        - hal
