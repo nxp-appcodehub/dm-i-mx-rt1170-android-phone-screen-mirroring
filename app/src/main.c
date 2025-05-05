@@ -9,9 +9,11 @@
 
 #include <zephyr/net/dhcpv4_server.h>
 #include <zephyr/net/net_if.h>
+#include <zephyr/net/net_event.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/net/net_config.h>
+#include <zephyr/net/wifi_mgmt.h>
 
 #include "screen.h"
 #include "decode.h"
@@ -27,6 +29,14 @@ static struct in_addr server_addr = {{{192, 0, 2, 1}}};
 static struct in_addr base_addr = {{{192, 0, 2, 2}}};
 static struct in_addr netmask = {{{255, 255, 255, 0}}};
 
+#define WIFI_AP_SSID "screen-mirror-wifi"
+#define WIFI_AP_PSK  "nxpdemo2025"
+#define MACSTR       "%02X:%02X:%02X:%02X:%02X:%02X"
+#define NET_EVENT_WIFI_MASK                                                                        \
+	(NET_EVENT_WIFI_CONNECT_RESULT | NET_EVENT_WIFI_DISCONNECT_RESULT |                        \
+	 NET_EVENT_WIFI_AP_ENABLE_RESULT | NET_EVENT_WIFI_AP_DISABLE_RESULT |                      \
+	 NET_EVENT_WIFI_AP_STA_CONNECTED | NET_EVENT_WIFI_AP_STA_DISCONNECTED)
+
 enum app_state {
 	APP_WAIT_FOR_CLIENT,
 	APP_RUNNING,
@@ -35,6 +45,28 @@ enum app_state {
 
 K_EVENT_DEFINE(application_event);
 
+static bool enable_dhcpv4_server(struct net_if *iface)
+{
+	net_if_ipv4_set_gw(iface, &server_addr);
+
+	if (net_if_ipv4_addr_add(iface, &server_addr, NET_ADDR_MANUAL, 0) == NULL) {
+		LOG_ERR("unable to set IP address for AP interface");
+		return false;
+	}
+
+	if (!net_if_ipv4_set_netmask_by_addr(iface, &server_addr, &netmask)) {
+		LOG_ERR("Unable to set netmask for AP interface: %s", netmask.s4_addr);
+		return false;
+	}
+
+	if (net_dhcpv4_server_start(iface, &base_addr) != 0) {
+		LOG_ERR("DHCP server is not started for desired IP");
+		return false;
+	}
+
+	return true;
+}
+
 int main(void)
 {
 	struct sockaddr_in addr, client_addr;
@@ -42,6 +74,7 @@ int main(void)
 	int ret, sock, video_sock;
 	struct net_if *iface;
 	enum app_state cur_state, next_state;
+	bool dhcpv4_server_enabled = false;
 
 	iface = net_if_get_default();
 
@@ -59,15 +92,49 @@ int main(void)
 			break;
 		}
 	}
+#elif defined(CONFIG_WIFI)
+	STRUCT_SECTION_FOREACH(net_if, i_iface) {
+		if (strncmp(net_if_get_device(i_iface)->name, "ua", 2) == 0) {
+			iface = i_iface;
+			break;
+		}
+	}
+	static struct wifi_connect_req_params ap_config;
+
+	if (!iface) {
+		LOG_INF("AP: is not initialized");
+		return -EIO;
+	}
+
+	LOG_INF("Turning on AP Mode");
+	ap_config.ssid = (const uint8_t *)WIFI_AP_SSID;
+	ap_config.ssid_length = strlen(WIFI_AP_SSID);
+	ap_config.psk = (const uint8_t *)WIFI_AP_PSK;
+	ap_config.psk_length = strlen(WIFI_AP_PSK);
+	ap_config.channel = WIFI_CHANNEL_ANY;
+	ap_config.band = WIFI_FREQ_BAND_5_GHZ;
+	ap_config.bandwidth = WIFI_FREQ_BANDWIDTH_40MHZ;
+
+	if (strlen(WIFI_AP_PSK) == 0) {
+		ap_config.security = WIFI_SECURITY_TYPE_NONE;
+	} else {
+
+		ap_config.security = WIFI_SECURITY_TYPE_PSK;
+	}
+
+	dhcpv4_server_enabled = enable_dhcpv4_server(iface);
+
+	ret = net_mgmt(NET_REQUEST_WIFI_AP_ENABLE, iface, &ap_config,
+		       sizeof(struct wifi_connect_req_params));
 #endif
 
 	LOG_INF("Protocol %s is selected", iface->if_dev->dev->name);
 
-	(void)net_config_init_app(net_if_get_device(iface), "Initializing network");
-	(void)net_if_ipv4_addr_add(iface, &server_addr, NET_ADDR_MANUAL, 0);
-	(void)net_if_ipv4_set_netmask_by_addr(iface, &server_addr, &netmask);
-
-	net_dhcpv4_server_start(iface, &base_addr);
+	if (!dhcpv4_server_enabled) {
+		(void)net_config_init_app(net_if_get_device(iface), "Initializing network");
+		(void)net_if_ipv4_addr_add(iface, &server_addr, NET_ADDR_MANUAL, 0);
+		(void)net_if_ipv4_set_netmask_by_addr(iface, &server_addr, &netmask);
+	}
 
 	/* Prepare Network */
 	(void)memset(&addr, 0, sizeof(addr));
@@ -117,13 +184,14 @@ int main(void)
 	while (1) {
 		switch (net_if_oper_state(iface)) {
 		case NET_IF_OPER_UP:
-			if (!dhcpv4_server_running) {
+			if (!dhcpv4_server_running && !dhcpv4_server_enabled) {
 				net_dhcpv4_server_start(iface, &base_addr);
 				dhcpv4_server_running = true;
+				dhcpv4_server_enabled = true;
 			}
 			break;
 		default:
-			if (dhcpv4_server_running) {
+			if (dhcpv4_server_running && dhcpv4_server_enabled) {
 				net_dhcpv4_server_stop(iface);
 				dhcpv4_server_running = false;
 			}
