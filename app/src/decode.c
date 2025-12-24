@@ -1,3 +1,9 @@
+/*
+ * Copyright 2024-2026 NXP
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <string.h>
 
 #include <zephyr/drivers/display.h>
