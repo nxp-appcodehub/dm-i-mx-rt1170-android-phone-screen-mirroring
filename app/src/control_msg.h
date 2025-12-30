@@ -1,5 +1,5 @@
-#ifndef SC_CONTROLMSG_H
-#define SC_CONTROLMSG_H
+#ifndef __SC_CONTROLMSG_H__
+#define __SC_CONTROLMSG_H__
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -13,6 +13,7 @@
 
 enum sc_control_msg_type {
 	SC_CONTROL_MSG_TYPE_INJECT_TOUCH_EVENT = 2,
+	SC_CONTROL_MSG_TYPE_DUMMY = 15
 };
 
 struct sc_control_msg {
@@ -33,4 +34,4 @@ struct sc_control_msg {
 // return the number of bytes written
 size_t sc_control_msg_serialize(const struct sc_control_msg *msg, unsigned char *buf);
 
-#endif
+#endif /*__SC_CONTROLMSG_H__*/

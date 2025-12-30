@@ -45,3 +45,18 @@ config JPEG_SLAB_COUNT
 	help
 	  Number of slabs to allocate for JPEG frame buffering
 
+choice
+	prompt "Control Event protocol"
+	default CONTROL_EVENT_TCP
+
+config CONTROL_EVENT_UDP
+	bool "Control UDP protocol"
+	help
+		Control events is reporting using UDP protocol
+
+config CONTROL_EVENT_TCP
+	bool "Control TCP protocol"
+	help
+		Touch events is reporting using TCP protocol
+
+endchoice

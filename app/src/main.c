@@ -19,7 +19,7 @@
 LOG_MODULE_REGISTER(main);
 
 #define MY_PORT          5000
-#define MAX_CLIENT_QUEUE 1
+#define MAX_CLIENT_QUEUE 2
 
 static struct in_addr server_addr = {{{192, 0, 2, 1}}};
 static struct in_addr base_addr = {{{192, 0, 2, 2}}};
@@ -86,6 +86,8 @@ int main(void)
 		return err;
 	}
 
+	control_init();
+
 	cur_state = APP_WAIT_FOR_CLIENT;
 	next_state = APP_WAIT_FOR_CLIENT;
 
@@ -124,12 +126,15 @@ int main(void)
 				printk("TCP: Accepted connection\n");
 				client_addr.sin_port = htons(MY_PORT);
 				decode_start(&video_sock);
+				connect_control_socket(sock, &client_addr);
 				next_state = APP_RUNNING;
 			}
 			break;
 		case APP_RUNNING:
-			k_event_wait(&application_event, EVENT_SOCKET_THREAD_STOP, true, K_FOREVER);
+			k_event_wait(&application_event,
+				     EVENT_SOCKET_THREAD_STOP | EVENT_TOUCH_ERROR, true, K_FOREVER);
 			decode_stop();
+			disconnect_control_socket();
 			next_state = APP_WAIT_FOR_CLIENT;
 			break;
 		case APP_ERROR:
