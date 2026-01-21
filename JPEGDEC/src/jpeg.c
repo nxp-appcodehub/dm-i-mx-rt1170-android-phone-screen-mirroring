@@ -20,6 +20,9 @@
 // limitations under the License.
 //===========================================================================
 //
+/**
+ * Rename jpeg.inl to jpeg.c to be compatible with Zephyr
+ */
 #include "JPEGDEC.h"
 
 #ifdef TEENSYDUINO
