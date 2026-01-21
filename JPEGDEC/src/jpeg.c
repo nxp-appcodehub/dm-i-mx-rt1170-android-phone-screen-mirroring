@@ -22,16 +22,17 @@
 //
 /**
  * Rename jpeg.inl to jpeg.c to be compatible with Zephyr
+ * Modified by NXP 2026 to be used in Zephyr
  */
 #include "JPEGDEC.h"
 
 #ifdef TEENSYDUINO
 #include "my_cm4_simd.h"
-//#define HAS_SIMD
+// #define HAS_SIMD
 #endif
 
 #if !defined(NO_SIMD) && (defined(ARM_MATH_CM4) || defined(ARM_MATH_CM7))
-//#define HAS_SIMD
+// #define HAS_SIMD
 #endif
 
 #if defined (ARDUINO_ARCH_ESP32) && !defined(NO_SIMD)
@@ -69,7 +70,9 @@ static void JPEGGetMoreData(JPEGIMAGE *pPage);
 static int DecodeJPEG(JPEGIMAGE *pImage);
 static int32_t readRAM(JPEGFILE *pFile, uint8_t *pBuf, int32_t iLen);
 static int32_t seekMem(JPEGFILE *pFile, int32_t iPosition);
-#if defined (__MACH__) || defined( __LINUX__ ) || defined( __MCUXPRESSO ) || defined(_WIN64)
+#if defined(__MACH__) || defined(__LINUX__) || defined(__MCUXPRESSO) || defined(_WIN64) || defined(__ZEPHYR__)
+#define HAS_SIMD
+#include "cmsis_gcc.h"
 static int32_t readFile(JPEGFILE *pFile, uint8_t *pBuf, int32_t iLen);
 static int32_t seekFile(JPEGFILE *pFile, int32_t iPosition);
 static void closeFile(void *handle);
@@ -556,7 +559,7 @@ static const uint16_t usRangeTableB[] = {0x0000,0x0000,0x0000,0x0000,0x0000,0x00
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-#if defined (__MACH__) || defined( __LINUX__ ) || defined( __MCUXPRESSO ) || defined(_WIN64)
+#if defined(__MACH__) || defined(__LINUX__) || defined(__MCUXPRESSO) || defined(_WIN64) || defined(__ZEPHYR__)
 //
 // API for C
 //

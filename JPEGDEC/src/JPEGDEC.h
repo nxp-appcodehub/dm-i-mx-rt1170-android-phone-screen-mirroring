@@ -11,9 +11,14 @@
 // limitations under the License.
 //===========================================================================
 //
+
+/**
+ * Modified by NXP 2026 to be used in Zephyr
+ */
+
 #ifndef __JPEGDEC__
 #define __JPEGDEC__
-#if defined( __MACH__ ) || defined( __LINUX__ ) || defined( __MCUXPRESSO ) || defined( ESP_PLATFORM ) || defined(_WIN64)
+#if defined(__MACH__) || defined(__LINUX__) || defined(__MCUXPRESSO) || defined(ESP_PLATFORM) || defined(_WIN64) || defined(__ZEPHYR__)
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
