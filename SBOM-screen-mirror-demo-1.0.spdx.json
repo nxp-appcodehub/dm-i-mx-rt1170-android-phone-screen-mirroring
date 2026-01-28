@@ -1,0 +1,134 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-01-22T13:58:26Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.26"
+  },
+  "name": "dm-i-mx-rt1170-android-phone-screen-mirroring-1.0",
+  "dataLicense": "CC0-1.0",
+  "hasExtractedLicensingInfos": [
+    {
+      "name": "MIT v2 with Ad Clause License",
+      "licenseId": "LicenseRef-0507cbf4-6404-4033-b93e-9e0de2c11ae1",
+      "extractedText": "Permission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in the\nSoftware without restriction, including without limitation the rights to use,\ncopy, modify, merge, publish, distribute, sublicense, and/or sell copies of the\nSoftware, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE\nLIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF\nCONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\nSOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nExcept as contained in this notice, the names of the authors or their\ninstitutions shall not be used in advertising or otherwise to promote the sale,\nuse or other dealings in this Software without prior written authorization from\nthe authors."
+    }
+  ],
+  "documentNamespace": "https://nxp.com/spdx/7c96f378-ba0c-4429-ad32-a22631ad1d13",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-7c96f378-ba0c-4429-ad32-a22631ad1d13",
+      "name": "dm-i-mx-rt1170-android-phone-screen-mirroring",
+      "versionInfo": "1.0",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "https://github.com/nxp-appcodehub/dm-i-mx-rt1170-android-phone-screen-mirroring",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-e05cb937-b768-4eef-a323-30597e1e760c",
+      "name": "bitbank2/JPEGDEC",
+      "versionInfo": "1.8.4",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://github.com/bitbank2/JPEGDEC",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: bitbank2",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "6cf31621-f9ce-477b-9536-51f1453fa4dc",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/bitbank2/JPEGDEC@1.8.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-682d9024-60da-4699-8d46-091478dd9560",
+      "name": "Genymobile/scrcpy",
+      "versionInfo": "2.6.1",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://github.com/Genymobile/scrcpy/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: alpine",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:genymobile:scrcpy:2.6.1:*:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "da696b55-e93b-40aa-95bb-f889f5fc1351",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/alpine/scrcpy@2.6.1-r0?arch=aarch64",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-d419dcf0-c0c4-4736-94fa-67d22943a32d",
+      "name": "platform-frameworks-native",
+      "versionInfo": "android-6.0.1_r81",
+      "licenseConcluded": "(Apache-2.0 AND LicenseRef-0507cbf4-6404-4033-b93e-9e0de2c11ae1)",
+      "licenseDeclared": "(Apache-2.0 AND LicenseRef-0507cbf4-6404-4033-b93e-9e0de2c11ae1)",
+      "homepage": "https://android.googlesource.com/platform/frameworks/native",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: platform-frameworks-native",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:android:platform_framework_native:6.0.1:r81:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:android_package:platform-frameworks-native:6.0.1:r81:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        }
+      ],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-7c96f378-ba0c-4429-ad32-a22631ad1d13"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-7c96f378-ba0c-4429-ad32-a22631ad1d13",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-682d9024-60da-4699-8d46-091478dd9560"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-7c96f378-ba0c-4429-ad32-a22631ad1d13",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-d419dcf0-c0c4-4736-94fa-67d22943a32d"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-7c96f378-ba0c-4429-ad32-a22631ad1d13",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-e05cb937-b768-4eef-a323-30597e1e760c"
+    }
+  ]
+}
