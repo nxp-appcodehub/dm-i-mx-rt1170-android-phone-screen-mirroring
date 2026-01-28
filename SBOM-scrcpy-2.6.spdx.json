@@ -1,0 +1,69 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-01-27T11:46:38Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.26"
+  },
+  "name": "dm-i-mx-rt1170-android-phone-screen-mirroring-2.6",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/f48a0cec-84c4-4be6-b1a8-dd165510860e",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-f48a0cec-84c4-4be6-b1a8-dd165510860e",
+      "name": "dm-i-mx-rt1170-android-phone-screen-mirroring",
+      "versionInfo": "2.6",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "https://github.com/nxp-appcodehub/dm-i-mx-rt1170-android-phone-screen-mirroring/tree/android",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-36fda44f-5186-4f5c-a75f-1e23598f5648",
+      "name": "Genymobile/scrcpy",
+      "versionInfo": "v2.6",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://github.com/Genymobile/scrcpy/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: genymobile",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "73e8b315-0709-417b-bece-e60a42b48c14",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:genymobile:scrcpy:2.6:*:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/Genymobile/scrcpy@v2.6.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-f48a0cec-84c4-4be6-b1a8-dd165510860e"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-f48a0cec-84c4-4be6-b1a8-dd165510860e",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-36fda44f-5186-4f5c-a75f-1e23598f5648"
+    }
+  ]
+}
