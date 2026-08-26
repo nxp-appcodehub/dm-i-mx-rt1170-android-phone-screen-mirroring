@@ -23,7 +23,7 @@ endif # NET_STACK_CODE_RELOCATE
 
 config RECV_THREAD_PRIO
 	int "Receiving thread priority"
-	default 5
+	default 3
 	help
 	  Set the packet receiving thread preemptive priority
 
