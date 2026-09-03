@@ -318,9 +318,10 @@ void decode_stop()
 	struct jpeg_frame frame;
 
 	recv_ctx.control = THREAD_STOP;
+	zsock_shutdown(*recv_ctx.socket_fd, ZSOCK_SHUT_RDWR);
 	k_thread_join(&threads.socket_recv_thread, K_FOREVER);
 	k_thread_join(&threads.parse_decode_thread, K_FOREVER);
-	zsock_shutdown(*recv_ctx.socket_fd, ZSOCK_SHUT_RDWR);
+
 	zsock_close(*recv_ctx.socket_fd);
 
 	/* Purge message queue and free any remaining slabs */
