@@ -16,6 +16,7 @@
 
 #include "screen.h"
 #include "decode.h"
+#include "stats.h"
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>
@@ -139,6 +140,11 @@ int main(void)
 	}
 
 	control_init();
+
+#if defined(CONFIG_STATS_MONITOR)
+	/* Start the background FPS and CPU load monitor thread. */
+	stats_monitor_start();
+#endif /* CONFIG_STATS_MONITOR */
 
 	cur_state = APP_WAIT_FOR_CLIENT;
 	next_state = APP_WAIT_FOR_CLIENT;

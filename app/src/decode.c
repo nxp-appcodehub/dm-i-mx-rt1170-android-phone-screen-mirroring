@@ -14,6 +14,7 @@
 #include "decode.h"
 #include "JPEGDEC.h"
 #include "screen.h"
+#include "stats.h"
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 
@@ -268,6 +269,9 @@ static void decode_display_task(void *p1, void *p2, void *p3)
 			uint8_t *jpeg_data = (uint8_t *)frame.slab_ptr + frame.offset;
 			if (jpeg_decode(jpeg_data, frame.size, scr_buf, &buf_desc) == 0) {
 				display_write(ctx->display_dev, 0, 0, &buf_desc, scr_buf);
+#ifdef SCRMIRROR_STATS
+				stats_frame_done();
+#endif
 			}
 			LOG_DBG("decoded frame at offset %zu, size %zu bytes", frame.offset,
 				frame.size);
