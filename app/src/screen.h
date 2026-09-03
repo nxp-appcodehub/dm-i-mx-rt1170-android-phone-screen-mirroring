@@ -23,7 +23,8 @@
 #define MAX_TOUCH_POINTS CONFIG_INPUT_GT911_MAX_TOUCH_POINTS
 
 void control_init(void);
-void connect_control_socket(int socket_fd, struct sockaddr_in *client_addr);
+int connect_control_socket(int socket_fd, struct sockaddr_in *client_addr);
+
 int disconnect_control_socket(void);
 bool control_socket_is_connected(void);
 

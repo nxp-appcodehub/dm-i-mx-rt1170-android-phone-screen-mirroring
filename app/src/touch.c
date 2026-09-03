@@ -148,23 +148,65 @@ static void send_work_handler(struct k_work *kwork)
 	}
 }
 
-void connect_control_socket(int socket_fd, struct sockaddr_in *client_addr)
+int connect_control_socket(int socket_fd, struct sockaddr_in *client_addr)
 {
 	int client_addr_len = 0;
 
 	LOG_INF("Wait for control socket ...");
 
 	if (IS_ENABLED(CONFIG_CONTROL_EVENT_TCP)) {
-		/* Open another TCP socket for the control event*/
-		data.control_socket =
-			zsock_accept(socket_fd, (struct sockaddr *)client_addr, &client_addr_len);
+		/* Open another TCP socket for the control event. The accept must not
+		 * block forever: if the video stream drops before the client opens
+		 * this second connection, the decode thread stops and posts
+		 * EVENT_SOCKET_THREAD_STOP. A blocking zsock_accept() here would keep
+		 * the state machine parked before APP_RUNNING, so it would never wake
+		 * on that event and the board would hang with the decode thread gone
+		 * but the touch path still waiting. Poll with a timeout and abort as
+		 * soon as the decode thread has signalled that it stopped.
+		 */
+		struct zsock_pollfd fds = {
+			.fd = socket_fd,
+			.events = ZSOCK_POLLIN,
+		};
+
+		data.control_socket = -1;
+
+		while (true) {
+			int ret = zsock_poll(&fds, 1, 100);
+
+			/* The decode/receive path already tore down: give up waiting
+			 * for the control connection so the caller can clean up and
+			 * return to APP_WAIT_FOR_CLIENT.
+			 */
+			if (k_event_test(&application_event, EVENT_SOCKET_THREAD_STOP)) {
+				LOG_WRN("Decode thread stopped before control socket connected");
+				return -ECONNABORTED;
+			}
+
+			if (ret < 0) {
+				LOG_ERR("Control socket poll error: %d", errno);
+				return -EIO;
+			}
+
+			if (ret == 0) {
+				/* Timeout: re-check the stop condition and keep waiting. */
+				continue;
+			}
+
+			if (fds.revents & ZSOCK_POLLIN) {
+				data.control_socket =
+					zsock_accept(socket_fd, (struct sockaddr *)client_addr,
+						     &client_addr_len);
+				break;
+			}
+		}
 	} else {
 		data.control_socket = zsock_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	}
 
 	if (data.control_socket < 0) {
 		LOG_ERR("Failed to accept control socket: %d", errno);
-		return;
+		return -EIO;
 	}
 
 	data.remote_addr = client_addr;
@@ -175,6 +217,8 @@ void connect_control_socket(int socket_fd, struct sockaddr_in *client_addr)
 		IS_ENABLED(CONFIG_CONTROL_EVENT_TCP) ? "TCP" : "UDP");
 
 	k_timer_start(&check_alive_timer, K_MSEC(20000), K_MSEC(20000));
+
+	return 0;
 }
 
 int disconnect_control_socket(void)
