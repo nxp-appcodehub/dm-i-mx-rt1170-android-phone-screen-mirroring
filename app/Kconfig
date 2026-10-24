@@ -33,6 +33,36 @@ config DECODE_THREAD_PRIO
 	help
 	  Set the frame decoding thread preemptive priority
 
+config STATS_MONITOR
+	bool "Enable statistics monitor thread (FPS and CPU load)"
+	default y
+	help
+	  Start a dedicated background thread that periodically logs the
+	  measured frames-per-second (FPS) rate of the mirroring pipeline and,
+	  when CONFIG_CPU_LOAD is enabled, the current CPU load. Useful for
+	  benchmarking throughput and system utilization.
+
+if STATS_MONITOR
+
+config STATS_MONITOR_INTERVAL
+	int "Statistics reporting interval (seconds)"
+	default 1
+	help
+	  How often, in seconds, the measured FPS and CPU load are logged.
+
+config STATS_MONITOR_THREAD_PRIO
+	int "Statistics monitor thread priority"
+	default 4
+	help
+	  Preemptive priority of the statistics monitor thread. Kept above the
+	  receive (RECV_THREAD_PRIO) and decode (DECODE_THREAD_PRIO) threads so
+	  that, even when the mirroring pipeline saturates the CPU, the monitor
+	  still wakes on schedule and reports FPS and CPU load. Its workload is
+	  tiny (a counter read, a CPU-load read and one log line per interval),
+	  so the brief preemption does not measurably affect throughput.
+
+endif # STATS_MONITOR
+
 config JPEG_SLAB_SIZE
 	int "Size of a jpeg frame buffer slab (in KB)"
 	default 512

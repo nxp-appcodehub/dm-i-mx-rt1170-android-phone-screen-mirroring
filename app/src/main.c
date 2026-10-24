@@ -16,6 +16,7 @@
 
 #include "screen.h"
 #include "decode.h"
+#include "stats.h"
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>
@@ -140,6 +141,11 @@ int main(void)
 
 	control_init();
 
+#if defined(CONFIG_STATS_MONITOR)
+	/* Start the background FPS and CPU load monitor thread. */
+	stats_monitor_start();
+#endif /* CONFIG_STATS_MONITOR */
+
 	cur_state = APP_WAIT_FOR_CLIENT;
 	next_state = APP_WAIT_FOR_CLIENT;
 
@@ -161,9 +167,33 @@ int main(void)
 				printk("TCP: Accepted connection\n");
 				client_addr.sin_port = htons(MY_PORT);
 				decode_start(&video_sock);
-				connect_control_socket(sock, &client_addr);
-				next_state = APP_RUNNING;
+
+				/* connect_control_socket() may return before the
+				 * control connection is established if the video
+				 * decode path tore down while it was waiting. In
+				 * that case tear everything back down and go back
+				 * to waiting for a fresh client instead of moving
+				 * to APP_RUNNING with a half-connected session.
+				 */
+				if (connect_control_socket(sock, &client_addr) != 0) {
+					printk("TCP: Control socket not established, "
+					       "resetting session\n");
+					decode_stop();
+					disconnect_control_socket();
+					/* Clear any pending events so the next
+					 * session starts from a clean slate and
+					 * does not tear down immediately on a
+					 * stale EVENT_SOCKET_THREAD_STOP bit.
+					 */
+					k_event_clear(&application_event,
+						      EVENT_SOCKET_THREAD_STOP | EVENT_TOUCH_ERROR);
+					next_state = APP_WAIT_FOR_CLIENT;
+
+				} else {
+					next_state = APP_RUNNING;
+				}
 			}
+
 			break;
 		case APP_RUNNING:
 			k_event_wait(&application_event,
